@@ -46,6 +46,9 @@ class Remote(object):
 
     # custom set builder
     def get_custom_set_title(self, path):
+        if self.cmd_args.is_windows:
+            path = path.replace(os.sep, '/')
+
         title = path.split('/').pop()
 
         if self.cmd_args.custom_set:
