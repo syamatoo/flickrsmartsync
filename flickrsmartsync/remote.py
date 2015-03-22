@@ -5,6 +5,7 @@ import re
 import urllib
 import flickrapi
 import logging
+import sys
 
 logger = logging.getLogger("flickrsmartsync")
 
@@ -70,8 +71,8 @@ class Remote(object):
             photosets_args = self.args.copy()
             custom_title = self.get_custom_set_title(self.cmd_args.sync_path + folder)
             photosets_args.update({'primary_photo_id': photo_id,
-                                   'title': custom_title,
-                                   'description': folder})
+                                   'title': custom_title.decode(sys.getfilesystemencoding()),
+                                   'description': folder.decode(sys.getfilesystemencoding())})
             photo_set = json.loads(self.api.photosets_create(**photosets_args))
             self.photo_sets_map[folder] = photo_set['photoset']['id']
             logger.info('Created set [%s] and added photo' % custom_title)
@@ -86,8 +87,7 @@ class Remote(object):
 
     # Get photos in a set
     def get_photos_in_set(self, folder, get_url=False):
-        # bug on non utf8 machines dups
-        folder = folder.encode('utf-8') if isinstance(folder, unicode) else folder
+        folder = folder.encode(sys.getfilesystemencoding()) if isinstance(folder, unicode) else folder
 
         photos = {}
         # Always upload unix style
@@ -107,7 +107,7 @@ class Remote(object):
                     break
 
                 for photo in photos_in_set['photoset']['photo']:
-                    title = photo['title'].encode('utf-8')
+                    title = photo['title'].encode(sys.getfilesystemencoding())
                     # add missing extension if not present (take a guess as api original_format argument not working)
                     split = title.split(".")
                     # assume valid file extension is less than or equal to 5 characters and not all digits
@@ -153,7 +153,7 @@ class Remote(object):
             for current_set in sets['photosets']['photoset']:
                 # Make sure it's the one from backup format
                 desc = html_parser.unescape(current_set['description']['_content'])
-                desc = desc.encode('utf-8') if isinstance(desc, unicode) else desc
+                desc = desc.encode(sys.getfilesystemencoding()) if isinstance(desc, unicode) else desc
                 if desc:
                     self.photo_sets_map[desc] = current_set['id']
                     title = self.get_custom_set_title(self.cmd_args.sync_path + desc)
@@ -161,8 +161,8 @@ class Remote(object):
                         update_args = self.args.copy()
                         update_args.update({
                             'photoset_id': current_set['id'],
-                            'title': title,
-                            'description': desc
+                            'title': title.decode(sys.getfilesystemencoding()),
+                            'description': desc.decode(sys.getfilesystemencoding())
                         })
                         logger.info('Updating custom title [%s]...' % title)
                         json.loads(self.api.photosets_editMeta(**update_args))
@@ -172,9 +172,9 @@ class Remote(object):
         upload_args = {
             'auth_token': self.args["auth_token"],
             # (Optional) The title of the photo.
-            'title': photo,
+            'title': photo.decode(sys.getfilesystemencoding()),
             # (Optional) A description of the photo. May contain some limited HTML.
-            'description': folder,
+            'description': folder.decode(sys.getfilesystemencoding()),
             # (Optional) Set to 0 for no, 1 for yes. Specifies who can view the photo.
             'is_public': 0,
             'is_friend': 0,
