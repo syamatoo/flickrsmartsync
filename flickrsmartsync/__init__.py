@@ -10,7 +10,7 @@ from remote import Remote
 
 __author__ = 'faisal'
 
-logging.basicConfig()
+logging.basicConfig(format='%(asctime)s %(levelname)s:%(name)s:%(message)s')
 logger = logging.getLogger("flickrsmartsync")
 hdlr = SysLogHandler()
 formatter = logging.Formatter('flickrsmartsync %(message)s')
