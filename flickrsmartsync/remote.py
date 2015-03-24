@@ -22,10 +22,10 @@ class Remote(object):
     def __init__(self, cmd_args):
         # Command line arguments
         self.cmd_args = cmd_args
-        token = self.auth_api()
+        self.auth_api()
 
         # Common arguments
-        self.args = {'format': 'json', 'nojsoncallback': 1, 'auth_token': token}
+        self.args = {'format': 'json', 'nojsoncallback': 1}
 
         # photo_sets_map[folder] = id
         self.update_photo_sets_map()
@@ -35,15 +35,7 @@ class Remote(object):
         # api.token.path = 'flickr.token.txt'
 
         # Ask for permission
-        (token, frob) = self.api.get_token_part_one(perms='delete')
-        if not token:
-            raw_input("Please authorized this app then hit enter:")
-        try:
-            token = self.api.get_token_part_two((token, frob))
-        except:
-            logger.error('Please authorized to use')
-            exit(0)
-        return token
+        self.api.authenticate_via_browser(perms='delete')
 
     # custom set builder
     def get_custom_set_title(self, path):
@@ -173,7 +165,6 @@ class Remote(object):
 
     def upload(self, file_path, photo, folder):
         upload_args = {
-            'auth_token': self.args["auth_token"],
             # (Optional) The title of the photo.
             'title': photo.decode(sys.getfilesystemencoding()),
             # (Optional) A description of the photo. May contain some limited HTML.
