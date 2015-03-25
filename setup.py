@@ -26,7 +26,14 @@ def main():
           packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
           include_package_data=True,
           zip_safe=False,
-          install_requires=['watchdog', 'IPTCInfo'],
+          install_requires=[
+              'watchdog',
+              'IPTCInfo',
+              'six>=1.5.2',
+              'requests>=2.2.1',
+              'requests_oauthlib>=0.4.0',
+              'requests_toolbelt>=0.3.1',
+          ],
           entry_points={
               "console_scripts": ['flickrsmartsync = flickrsmartsync:main'],
           },

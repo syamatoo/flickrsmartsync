@@ -12,10 +12,9 @@ thanks to those guys for designing a simple and effective cache!
 import threading
 import time
 
-
 class SimpleCache(object):
     '''Simple response cache for FlickrAPI calls.
-
+    
     This stores max 50 entries, timing them out after 120 seconds:
     >>> cache = SimpleCache(timeout=120, max_entries=50)
     '''
@@ -47,32 +46,31 @@ class SimpleCache(object):
         '''
 
         now = time.time()
-        exp = self.expire_info.get(key)
+        exp = self.expire_info.get(repr(key))
         if exp is None:
             return default
         elif exp < now:
-            self.delete(key)
+            self.delete(repr(key))
             return default
 
-        return self.storage[key]
+        return self.storage[repr(key)]
 
     @locking
     def set(self, key, value, timeout=None):
         '''Set a value in the cache. If timeout is given, that timeout will be
         used for the key; otherwise the default cache timeout will be used.
         '''
-
+        
         if len(self.storage) >= self.max_entries:
             self.cull()
         if timeout is None:
             timeout = self.default_timeout
-        self.storage[key] = value
-        self.expire_info[key] = time.time() + timeout
+        self.storage[repr(key)] = value
+        self.expire_info[repr(key)] = time.time() + timeout
 
     @locking
     def delete(self, key):
-        '''Deletes a key from the cache,
-           failing silently if it doesn't exist.'''
+        '''Deletes a key from the cache, failing silently if it doesn't exist.'''
 
         if key in self.storage:
             del self.storage[key]
@@ -82,19 +80,19 @@ class SimpleCache(object):
     @locking
     def has_key(self, key):
         '''Returns True if the key is in the cache and has not expired.'''
-        return self.get(key) is not None
+        return self.get(repr(key)) is not None
 
     @locking
     def __contains__(self, key):
         '''Returns True if the key is in the cache and has not expired.'''
-        return self.has_key(key)
+        return self.has_key(repr(key))
 
     @locking
     def cull(self):
         '''Reduces the number of cached items'''
 
         doomed = [k for (i, k) in enumerate(self.storage)
-                  if i % self.cull_frequency == 0]
+                if i % self.cull_frequency == 0]
         for k in doomed:
             self.delete(k)
 
@@ -105,3 +103,4 @@ class SimpleCache(object):
         '''
 
         return len(self.storage)
+
